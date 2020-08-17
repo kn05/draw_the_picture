@@ -1,3 +1,6 @@
+import processing.serial.*;
+Serial port;
+
 Line[] picture = new Line[10000];
 PImage img;
 boolean[][] check = new boolean[2000][2000];
@@ -13,6 +16,7 @@ boolean finish = true;
 
 void setup() {
   size(900, 900);
+  port = new Serial(this, Serial.list()[1], 9600);
   frameRate(2400);
   img = loadImage("image\\google.png");
   for (int i=0; i<10000; i++) {
@@ -99,21 +103,37 @@ void draw() {
       }
     }
     println("index: " + in);
-  } 
-  else {
-    f2++;
-    if (f2 >= picture[f1].lines.size()-1) {
-      f1++;
-      f2 = 0;
-      //println("End!");
+  } else {
+    if (f1<in) {
+      f2++;
+      if (f2 >= picture[f1].lines.size()-1) {
+        f1++;
+        f2 = 0;
+        //println("End!");
+      }
+      PVector v1 = picture[f1].lines.get(f2);
+      PVector v2 = picture[f1].lines.get(f2+1);
+      stroke(1);
+      line(v1.x, v1.y, v2.x, v2.y);
     }
-    if(f1>=in){
-      println("End");
-      delay(100000);
+    else{
+      for(int i=0; i<in; i++){
+        port.write('m');
+        PVector v0 = picture[f1].lines.get(0);
+        int x0 = int(v0.x); int y0 = int(v0.y);
+        port.write(x0);
+        port.write(y0);
+        port.write('d');
+        for(int j=1; j<picture[f1].lines.size(); j++){
+          PVector v = picture[f1].lines.get(f2);
+          port.write('m');
+          int x = int(v.x);
+          port.write(x);
+          int y = int(v.y);
+          port.write(y);
+        }
+        port.write('u');
+      }
     }
-    PVector v1 = picture[f1].lines.get(f2);
-    PVector v2 = picture[f1].lines.get(f2+1);
-    stroke(1);
-    line(v1.x, v1.y, v2.x, v2.y);
   }
 }
