@@ -1,5 +1,6 @@
 import processing.serial.*;
 Serial port;
+PrintWriter output;
 
 Line[] picture = new Line[10000];
 PImage img;
@@ -17,6 +18,7 @@ boolean finish = true;
 void setup() {
   size(900, 900);
   port = new Serial(this, Serial.list()[1], 9600);
+  output = createWriter("positions.txt"); 
   frameRate(2400);
   img = loadImage("image\\google.png");
   for (int i=0; i<10000; i++) {
@@ -93,7 +95,7 @@ void draw() {
       for (int j=0; j<img.width; j++) {
         if (check[i][j]) {
           fill(random(0, 255), random(0, 255), random(0, 255));
-          ellipse(i, j, 10, 10);
+          //ellipse(i, j, 10, 10);
           PVector temp = new PVector(i, j);
           picture[in].push(temp);
           println("sans");
@@ -104,7 +106,7 @@ void draw() {
     }
     println("index: " + in);
   } else {
-    if (f1<in) {
+    if (f1<in-1) {
       f2++;
       if (f2 >= picture[f1].lines.size()-1) {
         f1++;
@@ -115,25 +117,38 @@ void draw() {
       PVector v2 = picture[f1].lines.get(f2+1);
       stroke(1);
       line(v1.x, v1.y, v2.x, v2.y);
-    }
-    else{
-      for(int i=0; i<in; i++){
-        port.write('m');
-        PVector v0 = picture[f1].lines.get(0);
-        int x0 = int(v0.x); int y0 = int(v0.y);
-        port.write(x0);
-        port.write(y0);
-        port.write('d');
-        for(int j=1; j<picture[f1].lines.size(); j++){
-          PVector v = picture[f1].lines.get(f2);
-          port.write('m');
+    } else {
+      println("End!");
+      for (int i=0; i<in-1; i++) {
+        //port.write('m');
+        output.println('m');
+        PVector v0 = picture[i].lines.get(0);
+        int x0 = int(v0.x); 
+        int y0 = int(v0.y);
+        //port.write(x0);
+        output.println(x0);
+        //port.write(y0);
+        output.println(y0);
+        //port.write('d');
+        output.println('d');
+        for (int j=1; j<picture[i].lines.size(); j++) {
+          PVector v = picture[i].lines.get(j);
+          //port.write('m');
+          output.println('m');
           int x = int(v.x);
-          port.write(x);
+          //port.write(x);
+          output.println(x);
           int y = int(v.y);
-          port.write(y);
+          //port.write(y);
+          output.println(y);
         }
-        port.write('u');
+        //port.write('u');
+        output.println('u');
       }
+      output.flush(); // Writes the remaining data to the file
+      output.close(); // Finishes the file
+      exit(); // Stops the program
+      println("Done!");
     }
   }
 }

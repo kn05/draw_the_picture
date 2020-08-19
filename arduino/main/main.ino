@@ -20,7 +20,7 @@ void move(int x, int y){
         motor2.run(FORWARD);
         delay(r*dy);
     }
-    if(dy > 0){
+    if(dy < 0){
         motor2.run(BACKWARD);
         delay(-r*dy);
     }
@@ -38,6 +38,7 @@ void setup() {
 }
 
 void loop(){
+    char cmd;
     if(Serial.available()){
         char cmd = Serial.read();
     }
@@ -47,13 +48,14 @@ void loop(){
         while(i){
             if(Serial.available()){
                 i--;
-                switch (Serial.read())
+                switch (i)
                 {
                 case 1:
                     x = Serial.read();
                     break;
                 case 0: 
                     y = Serial.read();
+                    break;
                 default:
                     break;
                 }
@@ -68,5 +70,9 @@ void loop(){
     if(cmd == 'd'){
         motor3.run(BACKWARD);
         delay(300);
+    }
+    else{
+      println("Error!");
+    }
     }
 }
